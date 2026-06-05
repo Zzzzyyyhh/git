@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model LabelProject {
+  id          String   @id @default(cuid())
+  name        String
+  templateKey String
+  status      String   @default("draft")
+  data        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TemplateDefault {
+  id          String   @id @default(cuid())
+  templateKey String   @unique
+  data        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

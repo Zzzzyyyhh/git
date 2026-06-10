@@ -1,6 +1,8 @@
 import Link from "next/link";
 
-export default function HomePage() {
+export default async function HomePage({ searchParams }: { searchParams: Promise<{ error?: string; next?: string }> }) {
+  const { error, next } = await searchParams;
+
   return (
     <div className="relative isolate min-h-screen overflow-hidden bg-[linear-gradient(135deg,#7f1015_0%,#94161d_34%,#b32226_62%,#7d0f13_100%)]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.14),transparent_30%),linear-gradient(180deg,rgba(30,7,9,0.16),transparent_50%)]" />
@@ -70,21 +72,28 @@ export default function HomePage() {
                 <p>登录后可直接进入项目列表，并继续模板编辑、预览校对与导出流程。</p>
               </div>
 
-              <form action="/labels" className="mt-8 space-y-4">
+              <form action="/api/auth/login" className="mt-8 space-y-4" method="POST">
+                {next ? <input name="next" type="hidden" value={next} /> : null}
                 <label className="block space-y-2">
                   <span className="text-sm font-medium text-[color:var(--lp-ink)]">内部账号</span>
-                  <input className="lp-input" defaultValue="longpai.food.ops" name="account" />
+                  <input autoComplete="username" className="lp-input" name="username" placeholder="请输入内部账号" />
                 </label>
                 <label className="block space-y-2">
                   <span className="text-sm font-medium text-[color:var(--lp-ink)]">访问口令</span>
-                  <input className="lp-input" defaultValue="••••••••" name="password" type="password" />
+                  <input autoComplete="current-password" className="lp-input" name="password" placeholder="请输入访问口令" type="password" />
                 </label>
 
-                <div className="rounded-[24px] border border-[rgba(125,15,19,0.08)] bg-[rgba(125,15,19,0.03)] px-4 py-4 text-sm leading-7 text-[color:var(--lp-muted-strong)]">
-                  当前阶段保留核心访问动作，不引入新的身份体系。
-                  <br />
-                  后续如需接入龙牌实际账号体系，可直接接在当前入口结构上。
-                </div>
+                {error === "invalid" ? (
+                  <div className="rounded-[20px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    账号或口令不正确，请重新输入。
+                  </div>
+                ) : (
+                  <div className="rounded-[24px] border border-[rgba(125,15,19,0.08)] bg-[rgba(125,15,19,0.03)] px-4 py-4 text-sm leading-7 text-[color:var(--lp-muted-strong)]">
+                    当前阶段保留核心访问动作，不引入新的身份体系。
+                    <br />
+                    后续如需接入龙牌实际账号体系，可直接接在当前入口结构上。
+                  </div>
+                )}
 
                 <button className="lp-btn-primary w-full px-5 py-4 text-sm font-semibold tracking-[0.08em]" type="submit">
                   进入标签系统

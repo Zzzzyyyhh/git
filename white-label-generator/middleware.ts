@@ -2,31 +2,22 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { getBasicAuthConfig } from "@/lib/env";
+import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
 
-function unauthorizedResponse() {
-  return new NextResponse("Authentication required", {
-    status: 401,
-    headers: {
-      "WWW-Authenticate": 'Basic realm="White Label Generator"'
-    }
-  });
-}
-
-function shouldBypass(pathname: string) {
+function isPublicPath(pathname: string) {
   return (
     pathname === "/" ||
-    pathname.startsWith("/labels") ||
+    pathname.startsWith("/api/auth/") ||
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/favicon") ||
-    pathname.startsWith("/public/") ||
     pathname.startsWith("/商标") ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml"
   );
 }
 
-export function middleware(request: NextRequest) {
-  if (shouldBypass(request.nextUrl.pathname)) {
+export async function middleware(request: NextRequest) {
+  if (isPublicPath(request.nextUrl.pathname)) {
     return NextResponse.next();
   }
 
@@ -35,26 +26,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const header = request.headers.get("authorization");
-  if (!header?.startsWith("Basic ")) {
-    return unauthorizedResponse();
-  }
-
-  try {
-    const encoded = header.slice(6);
-    const decoded = atob(encoded);
-    const separatorIndex = decoded.indexOf(":");
-    const username = separatorIndex >= 0 ? decoded.slice(0, separatorIndex) : "";
-    const password = separatorIndex >= 0 ? decoded.slice(separatorIndex + 1) : "";
-
-    if (username !== auth.username || password !== auth.password) {
-      return unauthorizedResponse();
-    }
-
+  const token = request.cookies.get(SESSION_COOKIE)?.value;
+  if (token && (await verifySessionToken(token, auth.username, auth.password))) {
     return NextResponse.next();
-  } catch {
-    return unauthorizedResponse();
   }
+
+  const loginUrl = new URL("/", request.url);
+  loginUrl.searchParams.set("next", request.nextUrl.pathname);
+  return NextResponse.redirect(loginUrl);
 }
 
 export const config = {

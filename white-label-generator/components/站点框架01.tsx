@@ -12,7 +12,7 @@ export function 站点框架01({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen" style={{ overflow: "clip" }}>
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[340px] bg-[radial-gradient(circle_at_top,rgba(150,20,26,0.18),transparent_62%)]" />
       <div className="pointer-events-none absolute right-[-140px] top-[120px] h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,rgba(202,168,95,0.18),transparent_68%)] blur-3xl" />
       <div className="pointer-events-none absolute left-[-160px] top-[360px] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,rgba(125,15,19,0.1),transparent_72%)] blur-3xl" />

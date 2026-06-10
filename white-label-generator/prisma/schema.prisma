@@ -24,3 +24,14 @@ model TemplateDefault {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model LabelPreset {
+  id          String   @id @default(cuid())
+  name        String
+  templateKey String
+  data        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([templateKey])
+}

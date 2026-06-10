@@ -302,29 +302,18 @@ export function 模板拖拽01({
       const containerRect = target.getBoundingClientRect();
       const frameElement = target.querySelector<HTMLElement>("[data-label-frame='true']");
       const frameRect = frameElement?.getBoundingClientRect() ?? containerRect;
+      const frameOffsetLeft = frameRect.left - containerRect.left;
+      const frameOffsetTop = frameRect.top - containerRect.top;
       const nextRects: Record<string, OverlayRect> = {};
 
       for (const targetItem of visibleTargets) {
         const id = getEditableTargetId(targetItem);
-        const element = target.querySelector<HTMLElement>(`[data-editable-id="${id}"]`);
         const box = getBox(templateKey, data, targetItem);
-
-        if (!element) {
-          nextRects[id] = {
-            left: frameRect.left - containerRect.left + box.x * scaleRef.current.x,
-            top: frameRect.top - containerRect.top + box.y * scaleRef.current.y,
-            width: box.width * scaleRef.current.x,
-            height: box.height * scaleRef.current.y
-          };
-          continue;
-        }
-
-        const rect = element.getBoundingClientRect();
         nextRects[id] = {
-          left: rect.left - containerRect.left,
-          top: rect.top - containerRect.top,
-          width: rect.width,
-          height: rect.height
+          left: frameOffsetLeft + box.x * scaleRef.current.x,
+          top: frameOffsetTop + box.y * scaleRef.current.y,
+          width: box.width * scaleRef.current.x,
+          height: box.height * scaleRef.current.y
         };
       }
 
@@ -335,12 +324,6 @@ export function 模板拖拽01({
     const frame = window.requestAnimationFrame(updateRects);
     const resizeObserver = new ResizeObserver(() => updateRects());
     resizeObserver.observe(target);
-    for (const targetItem of visibleTargets) {
-      const element = target.querySelector<HTMLElement>(`[data-editable-id="${getEditableTargetId(targetItem)}"]`);
-      if (element) {
-        resizeObserver.observe(element);
-      }
-    }
 
     window.addEventListener("resize", updateRects);
 

@@ -10,7 +10,7 @@ import {
   type LabelData
 } from "@/lib/labelSchema";
 import type { TemplateKey } from "@/lib/templateCatalog";
-import { label12095DetailLabels, label12095DetailOrder, renderLabel12095DetailValue } from "@/lib/中文模板120_01";
+import { label12095DetailLabels, renderLabel12095DetailValue } from "@/lib/中文模板120_01";
 
 const 主标签字符高度 = "7mm";
 const 详情字符高度 = "2.5mm";
@@ -190,7 +190,17 @@ function DetailTextBox({ data, detailKey }: { data: LabelData; detailKey: Label1
   return (
     <div
       data-editable-id={`detail:${detailKey}`}
-      style={mmBox(box, detailTextStyle())}
+      style={{
+        position: "absolute",
+        left: `${box.x}mm`,
+        top: `${box.y}mm`,
+        width: `${box.width}mm`,
+        minHeight: `${box.height}mm`,
+        height: "auto",
+        boxSizing: "border-box",
+        overflow: "visible",
+        ...detailTextStyle()
+      }}
     >
       <span style={{ display: "block", width: "100%", textAlign: "justify", transform: "scaleY(1.136)", transformOrigin: "left top" }}>
         <span style={{ fontWeight: 800 }}>{label12095DetailLabels[detailKey]}</span>
@@ -230,7 +240,7 @@ export function 标签95_01({ data, templateKey }: { data: LabelData; templateKe
           </span>
         </div>
 
-        {label12095DetailOrder.map((detailKey) => (
+        {data.label12095DetailOrder.map((detailKey) => (
           <DetailTextBox data={data} detailKey={detailKey} key={detailKey} />
         ))}
 

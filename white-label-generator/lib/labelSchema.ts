@@ -169,6 +169,12 @@ export const labelSchema = z.object({
   label90DetailFontSizePt: z.number().positive().default(6.8),
   label90DetailLineHeight: z.number().positive().default(1.36),
   label90HiddenDetails: z.array(label90DetailKeySchema).default(defaultLabel90HiddenDetails),
+  label90DetailOrder: z.array(label90DetailKeySchema).default([
+    "formalName", "ingredients", "allergen", "license", "storage", "date",
+    "consignor", "consignorAddress", "consignorTel", "manufacturer",
+    "manufacturerAddress", "manufacturerTel", "countryOfOrigin",
+    "standardCode", "usageMethod", "shelfLife", "customRows"
+  ]),
   label90DetailBoxes: z.object({
     formalName: label90DetailBoxSchema,
     ingredients: label90DetailBoxSchema,
@@ -218,6 +224,12 @@ export const labelSchema = z.object({
   label12095DetailFontSizePt: z.number().positive().default(6.8),
   label12095DetailLineHeight: z.number().positive().default(1.34),
   label12095HiddenDetails: z.array(label12095DetailKeySchema).default(defaultLabel12095HiddenDetails),
+  label12095DetailOrder: z.array(label12095DetailKeySchema).default([
+    "formalName", "ingredients", "allergen", "license", "standardCode",
+    "storage", "shelfLife", "date", "usageMethod", "consignor",
+    "consignorAddress", "consignorTel", "manufacturer", "countryOfOrigin",
+    "manufacturerTel", "manufacturerAddress", "website"
+  ]),
   label12095DetailBoxes: z.object({
     formalName: label90DetailBoxSchema,
     ingredients: label90DetailBoxSchema,
@@ -332,6 +344,12 @@ const emptyLabelDataSeed: LabelData = {
   label90DetailFontSizePt: 6.8,
   label90DetailLineHeight: 1.36,
   label90HiddenDetails: defaultLabel90HiddenDetails,
+  label90DetailOrder: [
+    "formalName", "ingredients", "allergen", "license", "storage", "date",
+    "consignor", "consignorAddress", "consignorTel", "manufacturer",
+    "manufacturerAddress", "manufacturerTel", "countryOfOrigin",
+    "standardCode", "usageMethod", "shelfLife", "customRows"
+  ] as Label90DetailKey[],
   label90DetailBoxes: {
     formalName: { x: 4, y: 44, width: 78, height: 4.2 },
     ingredients: { x: 4, y: 48.3, width: 78, height: 14.5 },
@@ -363,6 +381,12 @@ const emptyLabelDataSeed: LabelData = {
   label12095DetailFontSizePt: 6.8,
   label12095DetailLineHeight: 1.34,
   label12095HiddenDetails: defaultLabel12095HiddenDetails,
+  label12095DetailOrder: [
+    "formalName", "ingredients", "allergen", "license", "standardCode",
+    "storage", "shelfLife", "date", "usageMethod", "consignor",
+    "consignorAddress", "consignorTel", "manufacturer", "countryOfOrigin",
+    "manufacturerTel", "manufacturerAddress", "website"
+  ] as Label12095DetailKey[],
   label12095DetailBoxes: {
     formalName: { x: 4, y: 26.8, width: 63, height: 4.6 },
     ingredients: { x: 4, y: 31.6, width: 63, height: 12.2 },
@@ -483,6 +507,7 @@ export function createExportLabelData(raw: unknown): LabelData {
       ...(isRecord(source.logoBoxes) ? source.logoBoxes : {})
     },
     label90HiddenDetails: Array.isArray(source.label90HiddenDetails) ? (source.label90HiddenDetails as LabelData["label90HiddenDetails"]) : base.label90HiddenDetails,
+    label90DetailOrder: Array.isArray(source.label90DetailOrder) ? (source.label90DetailOrder as LabelData["label90DetailOrder"]) : base.label90DetailOrder,
     label90DetailBoxes: {
       ...base.label90DetailBoxes,
       ...(isRecord(source.label90DetailBoxes) ? source.label90DetailBoxes : {})
@@ -494,6 +519,7 @@ export function createExportLabelData(raw: unknown): LabelData {
     label12095HiddenDetails: Array.isArray(source.label12095HiddenDetails)
       ? (source.label12095HiddenDetails as LabelData["label12095HiddenDetails"])
       : base.label12095HiddenDetails,
+    label12095DetailOrder: Array.isArray(source.label12095DetailOrder) ? (source.label12095DetailOrder as LabelData["label12095DetailOrder"]) : base.label12095DetailOrder,
     label12095DetailBoxes: {
       ...base.label12095DetailBoxes,
       ...(isRecord(source.label12095DetailBoxes) ? source.label12095DetailBoxes : {})
@@ -576,11 +602,13 @@ export const labelFieldLabels: Record<keyof LabelData, string> = {
   label90DetailLineHeight: "Label 90 Detail Line Height",
   label90HiddenDetails: "Label 90 Hidden Details",
   label90DetailBoxes: "Label 90 Detail Boxes",
+  label90DetailOrder: "Label 90 Detail Order",
   label90Layout: "Label 90 Layout",
   label12095DetailFontSizePt: "Label 120x95 Detail Font Size",
   label12095DetailLineHeight: "Label 120x95 Detail Line Height",
   label12095HiddenDetails: "Label 120x95 Hidden Details",
   label12095DetailBoxes: "Label 120x95 Detail Boxes",
+  label12095DetailOrder: "Label 120x95 Detail Order",
   label12095Layout: "Label 120x95 Layout",
   hiddenRows: "Hidden Rows",
   customRows: "Custom Rows"

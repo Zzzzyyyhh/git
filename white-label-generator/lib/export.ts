@@ -19,7 +19,7 @@ import {
   type StandardRowKey
 } from "@/lib/labelSchema";
 import { getTemplateMeta, type TemplateKey } from "@/lib/templateCatalog";
-import { label12095DetailLabels, label12095DetailOrder, renderLabel12095DetailValue } from "@/lib/中文模板120_01";
+import { label12095DetailLabels, renderLabel12095DetailValue } from "@/lib/中文模板120_01";
 
 function loadFontB64(filename: string): string {
   try {
@@ -520,27 +520,7 @@ function renderLabel90DetailBox(data: LabelData, key: Label90DetailKey) {
 
 function renderLabel90Markup(data: LabelData) {
   const layout = normalizeLabel90NutritionLayout(data);
-  const detailMarkup = (
-    [
-      "formalName",
-      "ingredients",
-      "allergen",
-      "license",
-      "storage",
-      "date",
-      "consignor",
-      "consignorAddress",
-      "consignorTel",
-      "manufacturer",
-      "manufacturerAddress",
-      "manufacturerTel",
-      "countryOfOrigin",
-      "standardCode",
-      "usageMethod",
-      "shelfLife",
-      "customRows"
-    ] as Label90DetailKey[]
-  )
+  const detailMarkup = data.label90DetailOrder
     .map((key) => renderLabel90DetailBox(data, key))
     .join("");
 
@@ -577,7 +557,7 @@ function renderLabel120x95DetailBox(data: LabelData, key: Label12095DetailKey) {
 
 function renderLabel120x95Markup(data: LabelData) {
   const layout = normalizeLabel120x95NutritionLayout(data);
-  const detailMarkup = label12095DetailOrder.map((key) => renderLabel120x95DetailBox(data, key)).join("");
+  const detailMarkup = data.label12095DetailOrder.map((key) => renderLabel120x95DetailBox(data, key)).join("");
 
   return `
     <section data-label-root="true" style="width:122mm;height:97mm;box-sizing:border-box;padding:1mm;background:#ffffff;color:#231f20;font-family:${思源黑体};">

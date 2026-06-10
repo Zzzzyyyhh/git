@@ -250,7 +250,17 @@ function DetailTextBox({ data, detailKey }: { data: LabelData; detailKey: Label9
   return (
     <div
       data-editable-id={`detail:${detailKey}`}
-      style={mmBox(box, detailTextStyle({ zIndex: detailKey === "manufacturerTel" ? 2 : 1 }))}
+      style={{
+        position: "absolute",
+        left: `${box.x}mm`,
+        top: `${box.y}mm`,
+        width: `${box.width}mm`,
+        minHeight: `${box.height}mm`,
+        height: "auto",
+        boxSizing: "border-box",
+        overflow: "visible",
+        ...detailTextStyle({ zIndex: detailKey === "manufacturerTel" ? 2 : 1 })
+      }}
     >
       {detailKey === "customRows" ? (
         value
@@ -266,25 +276,7 @@ function DetailTextBox({ data, detailKey }: { data: LabelData; detailKey: Label9
 
 export function 标签90({ data, templateKey }: { data: LabelData; templateKey: TemplateKey }) {
   const layout = normalizeNutritionLayout(data.label90Layout);
-  const detailKeys: Label90DetailKey[] = [
-    "formalName",
-    "ingredients",
-    "allergen",
-    "license",
-    "storage",
-    "date",
-    "consignor",
-    "consignorAddress",
-    "consignorTel",
-    "manufacturer",
-    "manufacturerAddress",
-    "manufacturerTel",
-    "countryOfOrigin",
-    "standardCode",
-    "usageMethod",
-    "shelfLife",
-    "customRows"
-  ];
+  const detailKeys = data.label90DetailOrder;
 
   return (
     <section data-label-root="true" style={outerStyle}>

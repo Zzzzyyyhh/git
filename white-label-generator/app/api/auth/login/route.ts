@@ -21,12 +21,19 @@ export async function POST(request: NextRequest) {
   const rawNext = formData.get("next")?.toString() ?? "";
   const origin = new URL(request.url).origin;
   let redirectPath = "/labels";
-  try {
-    const candidate = new URL(rawNext, origin);
-    if (candidate.origin === origin) redirectPath = candidate.pathname;
-  } catch {
-    // rawNext 不是合法路径，使用默认值
+  if (rawNext) {
+    try {
+      const candidate = new URL(rawNext, origin);
+      if (candidate.origin === origin && candidate.pathname !== "/") {
+        redirectPath = candidate.pathname;
+      }
+    } catch {
+      // rawNext 不是合法路径，使用默认值
+    }
   }
+
+  const appUrl = process.env.APP_URL ?? "";
+  const useSecure = appUrl.startsWith("https://");
 
   const response = NextResponse.redirect(new URL(redirectPath, request.url), { status: 303 });
   response.cookies.set(SESSION_COOKIE, token, {
@@ -34,7 +41,7 @@ export async function POST(request: NextRequest) {
     sameSite: "strict",
     path: "/",
     maxAge: SESSION_MAX_AGE,
-    secure: process.env.NODE_ENV === "production"
+    secure: useSecure
   });
   return response;
 }

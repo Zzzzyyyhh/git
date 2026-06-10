@@ -4,18 +4,37 @@
 
 :root {
   color-scheme: light;
+  --lp-canvas: #f7f1e8;
+  --lp-paper: rgba(255, 252, 247, 0.9);
+  --lp-paper-strong: #fffaf2;
+  --lp-ink: #231815;
+  --lp-muted: rgba(35, 24, 21, 0.48);
+  --lp-muted-strong: rgba(35, 24, 21, 0.68);
+  --lp-line: rgba(80, 49, 28, 0.12);
+  --lp-line-strong: rgba(125, 15, 19, 0.18);
+  --lp-red: #9f1820;
+  --lp-red-deep: #7d0f13;
+  --lp-gold: #d0ae66;
+  --lp-shadow: 0 28px 72px rgba(97, 52, 33, 0.12);
 }
 
 html {
   background:
-    radial-gradient(circle at top, rgba(165, 91, 42, 0.1), transparent 28%),
-    linear-gradient(180deg, #f6f2e8 0%, #f9f8f5 42%, #ffffff 100%);
+    radial-gradient(circle at top, rgba(159, 24, 32, 0.12), transparent 30%),
+    radial-gradient(circle at 85% 18%, rgba(208, 174, 102, 0.1), transparent 22%),
+    linear-gradient(180deg, #f8f1e7 0%, #f8f5ee 42%, #fbfaf8 100%);
+  font-family:
+    "PingFang SC",
+    "Noto Sans SC",
+    "Microsoft YaHei",
+    system-ui,
+    sans-serif;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  color: #161616;
+  color: var(--lp-ink);
 }
 
 a {
@@ -28,4 +47,144 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+::selection {
+  background: rgba(159, 24, 32, 0.16);
+}
+
+@layer components {
+  .lp-shell-card {
+    background:
+      linear-gradient(180deg, rgba(255, 251, 245, 0.95), rgba(255, 250, 243, 0.88)),
+      linear-gradient(135deg, rgba(208, 174, 102, 0.05), rgba(159, 24, 32, 0.02));
+    border: 1px solid var(--lp-line);
+    border-radius: 32px;
+    box-shadow: var(--lp-shadow);
+    backdrop-filter: blur(16px);
+    padding: 1.25rem 1.4rem;
+  }
+
+  .lp-card {
+    background: linear-gradient(180deg, rgba(255, 251, 246, 0.96), rgba(255, 248, 239, 0.9));
+    border: 1px solid var(--lp-line);
+    border-radius: 30px;
+    box-shadow: var(--lp-shadow);
+    backdrop-filter: blur(12px);
+  }
+
+  .lp-panel {
+    background: linear-gradient(180deg, rgba(255, 251, 246, 0.96), rgba(250, 242, 232, 0.86));
+    border: 1px solid var(--lp-line);
+    border-radius: 24px;
+  }
+
+  .lp-section {
+    background:
+      linear-gradient(180deg, rgba(255, 250, 244, 0.94), rgba(249, 240, 229, 0.82)),
+      linear-gradient(90deg, rgba(208, 174, 102, 0.04), transparent 28%);
+    border: 1px solid var(--lp-line);
+    border-radius: 24px;
+  }
+
+  .lp-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    border: 1px solid rgba(208, 174, 102, 0.35);
+    background: rgba(208, 174, 102, 0.14);
+    color: var(--lp-red-deep);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    padding: 0.45rem 0.8rem;
+    text-transform: uppercase;
+  }
+
+  .lp-nav-pill {
+    border: 1px solid var(--lp-line);
+    border-radius: 9999px;
+    background: rgba(255, 253, 249, 0.74);
+    color: var(--lp-muted-strong);
+    font-size: 0.92rem;
+    padding: 0.78rem 1.1rem;
+    transition: 160ms ease;
+  }
+
+  .lp-nav-pill:hover {
+    border-color: rgba(125, 15, 19, 0.2);
+    color: var(--lp-red-deep);
+    background: rgba(255, 249, 240, 0.96);
+  }
+
+  .lp-nav-pill-active {
+    border-color: rgba(125, 15, 19, 0.18);
+    background: linear-gradient(135deg, rgba(159, 24, 32, 0.08), rgba(208, 174, 102, 0.12));
+    color: var(--lp-red-deep);
+  }
+
+  .lp-input {
+    width: 100%;
+    border: 1px solid rgba(80, 49, 28, 0.12);
+    border-radius: 18px;
+    background: rgba(255, 253, 249, 0.92);
+    color: var(--lp-ink);
+    outline: none;
+    padding: 0.9rem 1rem;
+    transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+  }
+
+  .lp-input:focus {
+    border-color: rgba(125, 15, 19, 0.36);
+    box-shadow: 0 0 0 4px rgba(159, 24, 32, 0.08);
+    background: #fffdf9;
+  }
+
+  .lp-btn-primary {
+    border: 0;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, var(--lp-red) 0%, var(--lp-red-deep) 100%);
+    color: #fff8f0;
+    transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
+    box-shadow: 0 18px 34px rgba(125, 15, 19, 0.22);
+  }
+
+  .lp-btn-primary:hover {
+    filter: brightness(1.03);
+    transform: translateY(-1px);
+  }
+
+  .lp-btn-secondary {
+    border: 1px solid rgba(80, 49, 28, 0.12);
+    border-radius: 9999px;
+    background: rgba(255, 251, 246, 0.84);
+    color: var(--lp-ink);
+    transition: 150ms ease;
+  }
+
+  .lp-btn-secondary:hover {
+    border-color: rgba(125, 15, 19, 0.18);
+    color: var(--lp-red-deep);
+    background: rgba(255, 248, 239, 0.96);
+  }
+
+  .lp-btn-danger {
+    border: 1px solid rgba(184, 64, 64, 0.18);
+    border-radius: 9999px;
+    background: rgba(255, 246, 246, 0.9);
+    color: #a73939;
+    transition: 150ms ease;
+  }
+
+  .lp-btn-danger:hover {
+    background: rgba(255, 235, 235, 0.96);
+  }
+
+  .lp-kicker {
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--lp-muted);
+  }
 }

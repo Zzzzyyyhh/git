@@ -21,6 +21,35 @@ import {
 import { getTemplateMeta, type TemplateKey } from "@/lib/templateCatalog";
 import { label12095DetailLabels, label12095DetailOrder, renderLabel12095DetailValue } from "@/lib/中文模板120_01";
 
+function loadFontB64(filename: string): string {
+  try {
+    return readFileSync(path.join(process.cwd(), "public", "fonts", filename)).toString("base64");
+  } catch {
+    return "";
+  }
+}
+
+const _fontRegularB64 = loadFontB64("SourceHanSansCN-Regular.otf");
+const _fontBoldB64 = loadFontB64("SourceHanSansCN-Bold.otf");
+const _fontHeavyB64 = loadFontB64("SourceHanSansCN-Heavy.otf");
+
+function fontFaceBlock(): string {
+  const faces: string[] = [];
+  if (_fontRegularB64) {
+    faces.push(`@font-face{font-family:'Source Han Sans CN';src:url('data:font/otf;base64,${_fontRegularB64}') format('opentype');font-weight:100 500;font-display:block;}`);
+  }
+  if (_fontBoldB64) {
+    faces.push(`@font-face{font-family:'Source Han Sans CN';src:url('data:font/otf;base64,${_fontBoldB64}') format('opentype');font-weight:600 800;font-display:block;}`);
+  }
+  if (_fontHeavyB64) {
+    faces.push(`@font-face{font-family:'Source Han Sans CN';src:url('data:font/otf;base64,${_fontHeavyB64}') format('opentype');font-weight:900;font-display:block;}`);
+  }
+  if (faces.length === 0) {
+    return `@font-face{font-family:'Source Han Sans CN';src:local('Source Han Sans CN'),local('SourceHanSansCN'),local('思源黑体');font-weight:100 900;}`;
+  }
+  return faces.join("\n      ");
+}
+
 type ExportPayload = {
   templateKey: string;
   data: LabelData;
@@ -72,11 +101,14 @@ type PdfSheetConfig = {
   landscape: boolean;
 };
 
-const 主标签字符高度 = "8.5mm";
-const 详情字符高度 = "3.5mm";
-const 营养表字符高度 = "3.5mm";
+const 主标签字符高度 = "7mm";
+const 详情字符高度 = "2.5mm";
+const 营养表字符高度 = "2.5mm";
+const 长体 = `display:inline-block;transform:scaleY(1.136);transform-origin:center bottom;`;
+const 长体块 = `display:block;transform:scaleY(1.136);transform-origin:center top;`;
 const 营养表列模板 = "max-content max-content max-content";
 const 营养表列间距 = "1mm";
+const 思源黑体 = "'Source Han Sans CN','思源黑体','Source Han Sans SC','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif";
 
 const copyByVariant: Record<"en" | "cn", TemplateCopy> = {
   en: {
@@ -128,8 +160,6 @@ const customRowHeights: Record<CustomRowSize, { minHeight: string; fontSize: str
 };
 
 const pageSizes: Record<TemplateKey, PageSize> = {
-  carton_120_square: { width: "120mm", height: "120mm", viewportWidth: 1400, viewportHeight: 1400 },
-  carton_120_square_cn: { width: "120mm", height: "120mm", viewportWidth: 1400, viewportHeight: 1400 },
   label_90x120_cn: { width: "92mm", height: "122mm", viewportWidth: 1220, viewportHeight: 1620 },
   label_120x95_cn: { width: "122mm", height: "97mm", viewportWidth: 1620, viewportHeight: 1320 }
 };
@@ -301,35 +331,35 @@ function mmBoxStyle(box: { x: number; y: number; width: number; height: number }
 }
 
 function mainLabelTextStyle(extra = "") {
-  return `text-align:center;font-family:'SimHei','黑体','PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif;font-size:${主标签字符高度};font-weight:800;line-height:${主标签字符高度};letter-spacing:0;transform:none;white-space:nowrap;${extra}`;
+  return `text-align:center;font-family:${思源黑体};font-size:${主标签字符高度};font-weight:800;line-height:${主标签字符高度};letter-spacing:0;transform:none;white-space:nowrap;${extra}`;
 }
 
 function detailTextStyle(extra = "") {
-  return `font-family:'SimHei','黑体','PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif;font-size:${详情字符高度};line-height:${详情字符高度};white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;display:flex;align-items:flex-start;text-align:left;text-align-last:left;${extra}`;
+  return `font-family:${思源黑体};font-size:${详情字符高度};line-height:${详情字符高度};white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;display:flex;align-items:flex-start;text-align:left;text-align-last:left;${extra}`;
 }
 
 function nutritionCellStyle(textAlign: "left" | "center") {
-  return `box-sizing:border-box;padding:0;overflow:visible;font-family:'SimHei','黑体','PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif;font-size:${营养表字符高度};font-weight:700;line-height:${营养表字符高度};text-align:${textAlign};white-space:nowrap;`;
+  return `box-sizing:border-box;padding:0 1.5mm;overflow:visible;font-family:${思源黑体};font-size:${营养表字符高度};font-weight:700;line-height:${营养表字符高度};text-align:${textAlign};white-space:nowrap;`;
 }
 
 function nutritionRow(name: string, value: string, nrv: string) {
   return `
-    <div style="${nutritionCellStyle("left")}">${escapeHtml(name)}</div>
-    <div style="${nutritionCellStyle("center")}">${escapeHtml(value)}</div>
-    <div style="${nutritionCellStyle("center")}">${escapeHtml(nrv)}</div>
+    <div style="${nutritionCellStyle("left")}"><span style="${长体}">${escapeHtml(name)}</span></div>
+    <div style="${nutritionCellStyle("center")}"><span style="${长体}">${escapeHtml(value)}</span></div>
+    <div style="${nutritionCellStyle("center")}"><span style="${长体}">${escapeHtml(nrv)}</span></div>
   `;
 }
 
 function nutritionRow120x95(name: string, value: string, nrv: string) {
   return `
-    <div style="${nutritionCellStyle("left")}">${escapeHtml(name)}</div>
-    <div style="${nutritionCellStyle("center")}">${escapeHtml(value)}</div>
-    <div style="${nutritionCellStyle("center")}">${escapeHtml(nrv)}</div>
+    <div style="${nutritionCellStyle("left")}"><span style="${长体}">${escapeHtml(name)}</span></div>
+    <div style="${nutritionCellStyle("center")}"><span style="${长体}">${escapeHtml(value)}</span></div>
+    <div style="${nutritionCellStyle("center")}"><span style="${长体}">${escapeHtml(nrv)}</span></div>
   `;
 }
 
 function nutritionGridStyle() {
-  return `display:grid;grid-template-columns:${营养表列模板};column-gap:${营养表列间距};align-items:baseline;min-height:${营养表字符高度};overflow:visible;line-height:${营养表字符高度};`;
+  return `display:grid;grid-template-columns:${营养表列模板};column-gap:${营养表列间距};row-gap:0.4mm;padding:0.4mm 0;align-items:baseline;min-height:${营养表字符高度};overflow:visible;line-height:${营养表字符高度};`;
 }
 
 function nutritionDividerMarkup() {
@@ -340,19 +370,18 @@ function nutritionPanelBoxStyle(layout: {
   nutritionTitle: { x: number; y: number; width: number };
   nutritionRemark: { y: number; height: number };
 }, frameWidthMm: number) {
-  const right = Math.max(1, frameWidthMm - (layout.nutritionTitle.x + layout.nutritionTitle.width));
-  return `position:absolute;right:${right}mm;top:${layout.nutritionTitle.y}mm;width:fit-content;min-width:max-content;max-width:calc(${frameWidthMm}mm - ${right}mm - 2mm);height:auto;box-sizing:border-box;overflow:visible;background:#ffffff;pointer-events:none;`;
+  return `position:absolute;left:${layout.nutritionTitle.x}mm;top:${layout.nutritionTitle.y}mm;width:fit-content;min-width:max-content;max-width:calc(${frameWidthMm}mm - ${layout.nutritionTitle.x}mm - 2mm);height:auto;box-sizing:border-box;overflow:visible;background:#ffffff;pointer-events:none;z-index:3;`;
 }
 
 function renderNutritionTable90(data: LabelData, layout: ReturnType<typeof normalizeLabel90NutritionLayout>) {
   return `
     <div style="${nutritionPanelBoxStyle(layout, 90)}">
       <div style="width:fit-content;min-width:max-content;max-width:100%;border:1px solid #111111;box-sizing:border-box;overflow:visible;background:#ffffff;">
-        <div style="border-bottom:1px solid #111111;box-sizing:border-box;padding:0 0.6mm;text-align:center;font-family:'SimHei','黑体','PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif;font-size:${营养表字符高度};font-weight:800;line-height:${营养表字符高度};white-space:nowrap;">营养成分表</div>
+        <div style="border-bottom:1px solid #111111;box-sizing:border-box;padding:0.3mm 0.6mm;text-align:center;font-family:${思源黑体};font-size:${营养表字符高度};font-weight:800;line-height:${营养表字符高度};white-space:nowrap;"><span style="${长体}">营养成分表</span></div>
         <div style="${nutritionGridStyle()}">
-          <div style="${nutritionCellStyle("left")}">项目</div>
-          <div style="${nutritionCellStyle("center")}">${escapeHtml(data.nutritionServingSize || "每100克")}</div>
-          <div style="${nutritionCellStyle("center")}">营养素参考值%</div>
+          <div style="${nutritionCellStyle("left")}"><span style="${长体}">项目</span></div>
+          <div style="${nutritionCellStyle("center")}"><span style="${长体}">${escapeHtml(data.nutritionServingSize || "每100克")}</span></div>
+          <div style="${nutritionCellStyle("center")}"><span style="${长体}">营养素参考值%</span></div>
           ${nutritionDividerMarkup()}
           ${nutritionRow("能量", data.nutritionEnergy, data.nutritionEnergyNrv)}
           ${nutritionRow("蛋白质", data.nutritionProtein, data.nutritionProteinNrv)}
@@ -362,7 +391,7 @@ function renderNutritionTable90(data: LabelData, layout: ReturnType<typeof norma
           ${nutritionRow("-糖", data.nutritionSugar, data.nutritionSugarNrv)}
           ${nutritionRow("钠", data.nutritionSodium, data.nutritionSodiumNrv)}
         </div>
-        <div style="border-top:1px solid #111111;box-sizing:border-box;padding:0 0.6mm;text-align:center;font-family:'SimHei','黑体','PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif;font-size:${营养表字符高度};font-weight:700;line-height:${营养表字符高度};white-space:nowrap;">${escapeHtml(data.nutritionRemark || "儿童青少年应避免过量摄入盐油糖")}</div>
+        <div style="border-top:1px solid #111111;box-sizing:border-box;padding:0.4mm 0.6mm;text-align:center;font-family:${思源黑体};font-size:${营养表字符高度};font-weight:700;line-height:${营养表字符高度};white-space:nowrap;"><span style="${长体}">${escapeHtml(data.nutritionRemark || "儿童青少年应避免过量摄入盐油糖")}</span></div>
       </div>
     </div>
   `;
@@ -372,11 +401,11 @@ function renderNutritionTable120x95(data: LabelData, layout: ReturnType<typeof n
   return `
     <div style="${nutritionPanelBoxStyle(layout, 120)}">
       <div style="width:fit-content;min-width:max-content;max-width:100%;border:1px solid #111111;box-sizing:border-box;overflow:visible;background:#ffffff;">
-        <div style="border-bottom:1px solid #111111;box-sizing:border-box;padding:0 0.6mm;text-align:center;font-family:'SimHei','黑体','PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif;font-size:${营养表字符高度};font-weight:800;line-height:${营养表字符高度};white-space:nowrap;">营养成分表</div>
+        <div style="border-bottom:1px solid #111111;box-sizing:border-box;padding:0.3mm 0.6mm;text-align:center;font-family:${思源黑体};font-size:${营养表字符高度};font-weight:800;line-height:${营养表字符高度};white-space:nowrap;"><span style="${长体}">营养成分表</span></div>
         <div style="${nutritionGridStyle()}">
-          <div style="${nutritionCellStyle("left")}">项目</div>
-          <div style="${nutritionCellStyle("center")}">${escapeHtml(data.nutritionServingSize || "每100克")}</div>
-          <div style="${nutritionCellStyle("center")}">营养素参考值%</div>
+          <div style="${nutritionCellStyle("left")}"><span style="${长体}">项目</span></div>
+          <div style="${nutritionCellStyle("center")}"><span style="${长体}">${escapeHtml(data.nutritionServingSize || "每100克")}</span></div>
+          <div style="${nutritionCellStyle("center")}"><span style="${长体}">营养素参考值%</span></div>
           ${nutritionDividerMarkup()}
           ${nutritionRow120x95("能量", data.nutritionEnergy, data.nutritionEnergyNrv)}
           ${nutritionRow120x95("蛋白质", data.nutritionProtein, data.nutritionProteinNrv)}
@@ -386,7 +415,7 @@ function renderNutritionTable120x95(data: LabelData, layout: ReturnType<typeof n
           ${nutritionRow120x95("-糖", data.nutritionSugar, data.nutritionSugarNrv)}
           ${nutritionRow120x95("钠", data.nutritionSodium, data.nutritionSodiumNrv)}
         </div>
-        <div style="border-top:1px solid #111111;box-sizing:border-box;padding:0 0.6mm;text-align:center;font-family:'SimHei','黑体','PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif;font-size:${营养表字符高度};font-weight:700;line-height:${营养表字符高度};white-space:nowrap;">${escapeHtml(data.nutritionRemark || "儿童青少年应避免过量摄入盐油糖")}</div>
+        <div style="border-top:1px solid #111111;box-sizing:border-box;padding:0.4mm 0.6mm;text-align:center;font-family:${思源黑体};font-size:${营养表字符高度};font-weight:700;line-height:${营养表字符高度};white-space:nowrap;"><span style="${长体}">${escapeHtml(data.nutritionRemark || "儿童青少年应避免过量摄入盐油糖")}</span></div>
       </div>
     </div>
   `;
@@ -428,7 +457,7 @@ function isLabel90DetailHidden(data: LabelData, key: Label90DetailKey) {
 function label90DetailValue(data: LabelData, key: Label90DetailKey) {
   switch (key) {
     case "formalName":
-      return data.productFormalNameCn || data.productNameCn;
+      return data.productFormalNameCn;
     case "ingredients":
       return data.ingredients;
     case "allergen":
@@ -486,7 +515,7 @@ function renderLabel90DetailBox(data: LabelData, key: Label90DetailKey) {
   return `<div style="${mmBoxStyle(
     box,
     detailTextStyle(key === "manufacturerTel" ? "z-index:2;" : "z-index:1;")
-  )}"><span style="display:block;width:100%;text-align:left;text-align-last:left;">${content}</span></div>`;
+  )}"><span style="display:block;width:100%;text-align:justify;transform:scaleY(1.136);transform-origin:left top;">${content}</span></div>`;
 }
 
 function renderLabel90Markup(data: LabelData) {
@@ -516,12 +545,12 @@ function renderLabel90Markup(data: LabelData) {
     .join("");
 
   return `
-    <section data-label-root="true" style="width:92mm;height:122mm;box-sizing:border-box;padding:1mm;background:#ffffff;color:#231f20;font-family:'SimHei','黑体','PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif;">
+    <section data-label-root="true" style="width:92mm;height:122mm;box-sizing:border-box;padding:1mm;background:#ffffff;color:#231f20;font-family:${思源黑体};">
       <div style="position:relative;width:90mm;height:120mm;box-sizing:border-box;border:0.32mm solid #111111;background:#ffffff;overflow:hidden;">
         ${renderLogoMarkup(data, "label_90x120_cn")}
         <div style="${mmBoxStyle(layout.title, `text-align:center;font-size:${layout.title.fontSize}pt;line-height:1.06;letter-spacing:0.04mm;font-weight:800;`)}">${escapeHtml(data.productNameCn)}</div>
-        <div style="${mmBoxStyle(layout.category, mainLabelTextStyle())}">${escapeHtml(data.productCategoryCn || "复合调味料")}</div>
-        <div style="${mmBoxStyle(layout.netWeight, mainLabelTextStyle())}">净含量：${escapeHtml(data.netWeight)}</div>
+        <div style="${mmBoxStyle(layout.category, mainLabelTextStyle())}"><span style="${长体块}">${escapeHtml(data.productCategoryCn || "复合调味料")}</span></div>
+        <div style="${mmBoxStyle(layout.netWeight, mainLabelTextStyle(`font-family:${思源黑体};`))}"><span style="${长体块}">净含量：${escapeHtml(data.netWeight)}</span></div>
         ${detailMarkup}
         ${data.label90NutritionHidden ? "" : renderNutritionTable90(data, layout)}
       </div>
@@ -543,7 +572,7 @@ function renderLabel120x95DetailBox(data: LabelData, key: Label12095DetailKey) {
   return `<div style="${mmBoxStyle(
     box,
     detailTextStyle()
-  )}"><span style="display:block;width:100%;text-align:left;text-align-last:left;"><span style="font-weight:800;">${escapeHtml(label12095DetailLabels[key])}</span>${escapeHtml(value)}</span></div>`;
+  )}"><span style="display:block;width:100%;text-align:justify;transform:scaleY(1.136);transform-origin:left top;"><span style="font-weight:800;">${escapeHtml(label12095DetailLabels[key])}</span>${escapeHtml(value)}</span></div>`;
 }
 
 function renderLabel120x95Markup(data: LabelData) {
@@ -551,11 +580,11 @@ function renderLabel120x95Markup(data: LabelData) {
   const detailMarkup = label12095DetailOrder.map((key) => renderLabel120x95DetailBox(data, key)).join("");
 
   return `
-    <section data-label-root="true" style="width:122mm;height:97mm;box-sizing:border-box;padding:1mm;background:#ffffff;color:#231f20;font-family:'SimHei','黑体','PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif;">
+    <section data-label-root="true" style="width:122mm;height:97mm;box-sizing:border-box;padding:1mm;background:#ffffff;color:#231f20;font-family:${思源黑体};">
       <div style="position:relative;width:120mm;height:95mm;box-sizing:border-box;border:0.32mm solid #111111;background:#ffffff;overflow:hidden;">
         ${renderLogoMarkup(data, "label_120x95_cn")}
         <div style="${mmBoxStyle(layout.title, `text-align:center;font-size:${layout.title.fontSize}pt;font-weight:800;line-height:1.02;letter-spacing:0.03mm;`)}">${escapeHtml(data.productNameCn)}</div>
-        <div style="${mmBoxStyle(layout.category, mainLabelTextStyle())}">${escapeHtml(data.productCategoryCn || data.productFormalNameCn || "复合调味料")}</div>
+        <div style="${mmBoxStyle(layout.category, mainLabelTextStyle())}"><span style="${长体块}">${escapeHtml(data.productCategoryCn || "复合调味料")}</span></div>
         ${detailMarkup}
 
         ${
@@ -564,7 +593,7 @@ function renderLabel120x95Markup(data: LabelData) {
             : renderNutritionTable120x95(data, layout)
         }
 
-        <div style="${mmBoxStyle(layout.netWeight, mainLabelTextStyle())}">净含量：${escapeHtml(data.netWeight)}</div>
+        <div style="${mmBoxStyle(layout.netWeight, mainLabelTextStyle(`font-family:${思源黑体};`))}"><span style="${长体块}">净含量：${escapeHtml(data.netWeight)}</span></div>
       </div>
     </section>
   `;
@@ -620,6 +649,7 @@ function renderHtmlDocument(markup: string, pageSize: PageSize): string {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Label Export</title>
     <style>
+      ${fontFaceBlock()}
       @page { size: ${pageSize.width} ${pageSize.height}; margin: 0; }
       html, body {
         margin: 0;
@@ -646,6 +676,7 @@ function renderPdfHtmlDocument(markup: string, pageSize: PdfSheetConfig): string
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Label PDF Export</title>
     <style>
+      ${fontFaceBlock()}
       @page { size: A4 ${pageSize.landscape ? "landscape" : "portrait"}; margin: 0; }
       html, body {
         margin: 0;

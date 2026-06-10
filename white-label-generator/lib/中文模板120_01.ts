@@ -44,7 +44,7 @@ export const label12095DetailLabels: Record<Label12095DetailKey, string> = {
 export function renderLabel12095DetailValue(data: LabelData, key: Label12095DetailKey) {
   switch (key) {
     case "formalName":
-      return `${data.productNameCn}${data.productFormalNameCn ? `(${data.productFormalNameCn})` : ""}`.trim();
+      return data.productFormalNameCn;
     case "ingredients":
       return data.ingredients;
     case "allergen":

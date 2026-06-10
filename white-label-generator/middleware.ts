@@ -14,9 +14,12 @@ function unauthorizedResponse() {
 
 function shouldBypass(pathname: string) {
   return (
+    pathname === "/" ||
+    pathname.startsWith("/labels") ||
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/favicon") ||
     pathname.startsWith("/public/") ||
+    pathname.startsWith("/商标") ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml"
   );

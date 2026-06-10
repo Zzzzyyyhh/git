@@ -6,11 +6,12 @@ import { 商标渲染01 } from "@/components/商标渲染01";
 import { label90DetailFixedLeftMm, type Label90DetailKey, type Label90Layout, type LabelData } from "@/lib/labelSchema";
 import type { TemplateKey } from "@/lib/templateCatalog";
 
-const 主标签字符高度 = "8.5mm";
-const 详情字符高度 = "3.5mm";
-const 营养表字符高度 = "3.5mm";
+const 主标签字符高度 = "7mm";
+const 详情字符高度 = "2.5mm";
+const 营养表字符高度 = "2.5mm";
 const 营养表列模板 = "max-content max-content max-content";
 const 营养表列间距 = "1mm";
+const 思源黑体 = '"Source Han Sans CN", "思源黑体", "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif';
 
 const outerStyle: CSSProperties = {
   width: "92mm",
@@ -19,7 +20,7 @@ const outerStyle: CSSProperties = {
   padding: "1mm",
   background: "#ffffff",
   color: "#231f20",
-  fontFamily: '"SimHei", "黑体", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif'
+  fontFamily: 思源黑体
 };
 
 const frameStyle: CSSProperties = {
@@ -67,7 +68,7 @@ function mmBox(box: { x: number; y: number; width: number; height: number }, ext
 function renderDetailValue(data: LabelData, key: Label90DetailKey) {
   switch (key) {
     case "formalName":
-      return data.productFormalNameCn || data.productNameCn;
+      return data.productFormalNameCn;
     case "ingredients":
       return data.ingredients;
     case "allergen":
@@ -107,12 +108,14 @@ function isHidden(data: LabelData, key: Label90DetailKey) {
   return data.label90HiddenDetails.includes(key);
 }
 
+const 长体: CSSProperties = { display: "inline-block", transform: "scaleY(1.136)", transformOrigin: "center bottom" };
+
 function nutritionRow(name: string, value: string, nrv: string) {
   return (
     <>
-      <div style={nutritionCellStyle("left")}>{name}</div>
-      <div style={nutritionCellStyle("center")}>{value}</div>
-      <div style={nutritionCellStyle("center")}>{nrv}</div>
+      <div style={nutritionCellStyle("left")}><span style={长体}>{name}</span></div>
+      <div style={nutritionCellStyle("center")}><span style={长体}>{value}</span></div>
+      <div style={nutritionCellStyle("center")}><span style={长体}>{nrv}</span></div>
     </>
   );
 }
@@ -120,9 +123,9 @@ function nutritionRow(name: string, value: string, nrv: string) {
 function nutritionCellStyle(textAlign: CSSProperties["textAlign"]): CSSProperties {
   return {
     boxSizing: "border-box",
-    padding: 0,
+    padding: "0 1.5mm",
     overflow: "visible",
-    fontFamily: '"SimHei", "黑体", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif',
+    fontFamily: 思源黑体,
     fontSize: 营养表字符高度,
     fontWeight: 700,
     lineHeight: 营养表字符高度,
@@ -136,6 +139,8 @@ function nutritionGridStyle(): CSSProperties {
     display: "grid",
     gridTemplateColumns: 营养表列模板,
     columnGap: 营养表列间距,
+    rowGap: "0.4mm",
+    padding: "0.4mm 0",
     alignItems: "baseline",
     minHeight: 营养表字符高度,
     overflow: "visible",
@@ -152,20 +157,18 @@ function nutritionDividerStyle(): CSSProperties {
 }
 
 function nutritionPanelStyle(layout: Label90Layout): CSSProperties {
-  const top = layout.nutritionTitle.y;
-  const right = Math.max(1, 90 - (layout.nutritionTitle.x + layout.nutritionTitle.width));
-
   return {
     position: "absolute",
-    right: `${right}mm`,
-    top: `${top}mm`,
+    left: `${layout.nutritionTitle.x}mm`,
+    top: `${layout.nutritionTitle.y}mm`,
     width: "fit-content",
     minWidth: "max-content",
-    maxWidth: `calc(90mm - ${right}mm - 2mm)`,
+    maxWidth: `calc(90mm - ${layout.nutritionTitle.x}mm - 2mm)`,
     boxSizing: "border-box",
     overflow: "visible",
     background: "#ffffff",
-    pointerEvents: "auto"
+    pointerEvents: "auto",
+    zIndex: 3
   };
 }
 
@@ -185,9 +188,9 @@ function nutritionTitleStyle(layout: Label90Layout): CSSProperties {
   return {
     borderBottom: "1px solid #111111",
     boxSizing: "border-box",
-    padding: "0 0.6mm",
+    padding: "0.3mm 0.6mm",
     textAlign: "center",
-    fontFamily: '"SimHei", "黑体", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif',
+    fontFamily: 思源黑体,
     fontSize: 营养表字符高度,
     fontWeight: 800,
     lineHeight: 营养表字符高度,
@@ -198,7 +201,7 @@ function nutritionTitleStyle(layout: Label90Layout): CSSProperties {
 function mainLabelTextStyle(extra?: CSSProperties): CSSProperties {
   return {
     textAlign: "center",
-    fontFamily: '"SimHei", "黑体", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif',
+    fontFamily: 思源黑体,
     fontSize: 主标签字符高度,
     fontWeight: 800,
     lineHeight: 主标签字符高度,
@@ -211,7 +214,7 @@ function mainLabelTextStyle(extra?: CSSProperties): CSSProperties {
 
 function detailTextStyle(extra?: CSSProperties): CSSProperties {
   return {
-    fontFamily: '"SimHei", "黑体", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif',
+    fontFamily: 思源黑体,
     fontSize: 详情字符高度,
     lineHeight: 详情字符高度,
     whiteSpace: "pre-wrap",
@@ -252,7 +255,7 @@ function DetailTextBox({ data, detailKey }: { data: LabelData; detailKey: Label9
       {detailKey === "customRows" ? (
         value
       ) : (
-        <span style={{ display: "block", width: "100%", textAlign: "left", textAlignLast: "left" }}>
+        <span style={{ display: "block", width: "100%", textAlign: "justify", transform: "scaleY(1.136)", transformOrigin: "left top" }}>
           <span style={{ fontWeight: 800 }}>{detailLabels[detailKey as Exclude<Label90DetailKey, "customRows">]}</span>
           {value}
         </span>
@@ -304,14 +307,18 @@ export function 标签90({ data, templateKey }: { data: LabelData; templateKey: 
           data-editable-id="layout:category"
           style={mmBox(layout.category, mainLabelTextStyle())}
         >
-          {data.productCategoryCn || "复合调味料"}
+          <span style={{ display: "block", transform: "scaleY(1.136)", transformOrigin: "center top" }}>
+            {data.productCategoryCn || "复合调味料"}
+          </span>
         </div>
 
         <div
           data-editable-id="layout:netWeight"
-          style={mmBox(layout.netWeight, mainLabelTextStyle())}
+          style={mmBox(layout.netWeight, mainLabelTextStyle({ fontFamily: 思源黑体 }))}
         >
-          净含量：{data.netWeight}
+          <span style={{ display: "block", transform: "scaleY(1.136)", transformOrigin: "center top" }}>
+            净含量：{data.netWeight}
+          </span>
         </div>
 
         {detailKeys.map((detailKey) => (
@@ -324,11 +331,11 @@ export function 标签90({ data, templateKey }: { data: LabelData; templateKey: 
             style={nutritionPanelStyle(layout)}
           >
             <div style={nutritionBoxStyle()}>
-              <div style={nutritionTitleStyle(layout)}>营养成分表</div>
+              <div style={nutritionTitleStyle(layout)}><span style={长体}>营养成分表</span></div>
               <div style={nutritionGridStyle()}>
-                <div style={nutritionCellStyle("left")}>项目</div>
-                <div style={nutritionCellStyle("center")}>{data.nutritionServingSize || "每100克"}</div>
-                <div style={nutritionCellStyle("center")}>营养素参考值%</div>
+                <div style={nutritionCellStyle("left")}><span style={长体}>项目</span></div>
+                <div style={nutritionCellStyle("center")}><span style={长体}>{data.nutritionServingSize || "每100克"}</span></div>
+                <div style={nutritionCellStyle("center")}><span style={长体}>营养素参考值%</span></div>
                 <div style={nutritionDividerStyle()} />
                 {nutritionRow("能量", data.nutritionEnergy, data.nutritionEnergyNrv)}
                 {nutritionRow("蛋白质", data.nutritionProtein, data.nutritionProteinNrv)}
@@ -342,16 +349,16 @@ export function 标签90({ data, templateKey }: { data: LabelData; templateKey: 
                 style={{
                   borderTop: "1px solid #111111",
                   boxSizing: "border-box",
-                  padding: "0 0.6mm",
+                  padding: "0.4mm 0.6mm",
                   textAlign: "center",
-                  fontFamily: '"SimHei", "黑体", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif',
+                  fontFamily: 思源黑体,
                   fontSize: 营养表字符高度,
                   fontWeight: 700,
                   lineHeight: 营养表字符高度,
                   whiteSpace: "nowrap"
                 }}
               >
-                {data.nutritionRemark || "儿童青少年应避免过量摄入盐油糖"}
+                <span style={长体}>{data.nutritionRemark || "儿童青少年应避免过量摄入盐油糖"}</span>
               </div>
             </div>
           </div>

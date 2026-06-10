@@ -19,8 +19,6 @@ type DragState = {
 };
 
 const templateSizeMap: Record<TemplateKey, { width: number; height: number }> = {
-  carton_120_square: { width: 120, height: 120 },
-  carton_120_square_cn: { width: 120, height: 120 },
   label_90x120_cn: { width: 90, height: 120 },
   label_120x95_cn: { width: 120, height: 95 }
 };

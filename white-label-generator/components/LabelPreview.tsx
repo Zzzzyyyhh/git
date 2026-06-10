@@ -22,7 +22,17 @@ export function LabelPreview({
   const TemplateComponent = template.Component;
 
   return (
-    <div className="overflow-auto rounded-[28px] border border-black/10 bg-[#f2efe7] p-4 shadow-panel">
+    <div className="lp-card overflow-auto p-4 sm:p-5">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[22px] border border-[color:var(--lp-line)] bg-white/66 px-4 py-3">
+        <div>
+          <div className="text-xs uppercase tracking-[0.24em] text-[color:var(--lp-muted)]">Live Preview</div>
+          <div className="mt-1 text-sm font-medium text-[color:var(--lp-ink)]">{template.name}</div>
+        </div>
+        <div className="rounded-full border border-[rgba(208,174,102,0.36)] bg-[rgba(208,174,102,0.14)] px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-[color:var(--lp-red-deep)]">
+          {template.sizeLabel}
+        </div>
+      </div>
+
       <div className="relative mx-auto min-w-max" ref={previewRef} style={{ zoom: previewScale }}>
         <TemplateComponent data={data} templateKey={template.key} />
         {overlay}

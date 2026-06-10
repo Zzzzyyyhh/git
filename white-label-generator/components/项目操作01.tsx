@@ -41,7 +41,7 @@ export function 项目操作01({ id, isArchived }: ProjectActionsProps) {
   return (
     <>
       <button
-        className="rounded-full border border-black/10 px-3 py-1.5 hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+        className="lp-btn-secondary px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
         disabled={busyAction !== null}
         onClick={() => void runAction("copy")}
         type="button"
@@ -49,7 +49,7 @@ export function 项目操作01({ id, isArchived }: ProjectActionsProps) {
         {busyAction === "copy" ? "复制中..." : "复制"}
       </button>
       <button
-        className="rounded-full border border-black/10 px-3 py-1.5 hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+        className="lp-btn-secondary px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
         disabled={busyAction !== null}
         onClick={() => void runAction("archive")}
         type="button"
@@ -57,7 +57,7 @@ export function 项目操作01({ id, isArchived }: ProjectActionsProps) {
         {busyAction === "archive" ? "处理中..." : isArchived ? "取消归档" : "归档"}
       </button>
       <button
-        className="rounded-full border border-red-200 px-3 py-1.5 text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
+        className="lp-btn-danger px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
         disabled={busyAction !== null}
         onClick={() => void runAction("delete")}
         type="button"

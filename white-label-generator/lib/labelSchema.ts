@@ -159,14 +159,10 @@ export const labelSchema = z.object({
   customLogoPng: z.string().default(""),
   logoBoxes: z
     .object({
-      carton_120_square: logoBoxSchema,
-      carton_120_square_cn: logoBoxSchema,
       label_90x120_cn: logoBoxSchema,
       label_120x95_cn: logoBoxSchema
     })
     .default({
-      carton_120_square: { x: 95, y: 5, width: 18, height: 18 },
-      carton_120_square_cn: { x: 95, y: 5, width: 18, height: 18 },
       label_90x120_cn: { x: 61, y: 5, width: 18, height: 12 },
       label_120x95_cn: { x: 26, y: 3.6, width: 16, height: 9.5 }
     }),
@@ -330,8 +326,6 @@ const emptyLabelDataSeed: LabelData = {
   logoKind: "none",
   customLogoPng: "",
   logoBoxes: {
-    carton_120_square: { x: 95, y: 5, width: 18, height: 18 },
-    carton_120_square_cn: { x: 95, y: 5, width: 18, height: 18 },
     label_90x120_cn: { x: 61, y: 5, width: 18, height: 12 },
     label_120x95_cn: { x: 26, y: 3.6, width: 16, height: 9.5 }
   },
@@ -457,7 +451,7 @@ export function createExampleLabelData(): LabelData {
 
 export const defaultLabelData = createEmptyLabelData();
 
-export function createDefaultProjectPayload(templateKey: z.infer<typeof templateKeySchema> = "carton_120_square", data = createEmptyLabelData()): LabelProjectPayload {
+export function createDefaultProjectPayload(templateKey: z.infer<typeof templateKeySchema> = "label_90x120_cn", data = createEmptyLabelData()): LabelProjectPayload {
   return {
     name: "",
     templateKey,

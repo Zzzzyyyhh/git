@@ -1,4 +1,4 @@
-export const templateKeys = ["carton_120_square", "carton_120_square_cn", "label_90x120_cn", "label_120x95_cn"] as const;
+export const templateKeys = ["label_90x120_cn", "label_120x95_cn"] as const;
 
 export type TemplateKey = (typeof templateKeys)[number];
 
@@ -12,18 +12,6 @@ export type TemplateDefinitionBase = {
 };
 
 export const templateCatalog: Record<TemplateKey, TemplateDefinitionBase> = {
-  carton_120_square: {
-    key: "carton_120_square",
-    name: "外箱贴 120 × 120 mm（英文）",
-    sizeLabel: "120mm × 120mm",
-    variant: "en"
-  },
-  carton_120_square_cn: {
-    key: "carton_120_square_cn",
-    name: "中文标签页 120 × 120 mm",
-    sizeLabel: "120mm × 120mm",
-    variant: "cn"
-  },
   label_90x120_cn: {
     key: "label_90x120_cn",
     name: "中文标签 90 × 120 mm",

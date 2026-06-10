@@ -41,29 +41,44 @@ export default async function LabelsPage({ searchParams }: LabelsPageProps) {
     }
   });
 
+  const draftCount = projects.filter((project) => project.status === "draft").length;
+  const archivedCount = projects.filter((project) => project.status === "archived").length;
+  const activeCount = projects.length - archivedCount;
+
   return (
     <div className="space-y-5">
-      <section className="rounded-[28px] border border-black/10 bg-white/90 p-6 shadow-panel">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <section className="lp-card p-6 sm:p-7">
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-black/45">Project Dashboard</p>
-            <h2 className="text-2xl font-semibold">标签项目列表 / Label Projects</h2>
-            <p className="mt-2 max-w-3xl text-sm text-black/60">
-              支持搜索、模板筛选、状态筛选、复制、归档和删除，适合高频维护多个白标项目。
+            <p className="lp-kicker">Project Dashboard</p>
+            <h2 className="mt-2 text-[clamp(1.7rem,3vw,2.4rem)] font-semibold tracking-[-0.03em]">标签项目列表</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-[color:var(--lp-muted-strong)]">
+              统一管理标签项目、模板状态与导出节点。主列表强调快速搜索、明确状态和高频操作的可达性。
             </p>
           </div>
-          <Link className="rounded-full bg-ink px-5 py-3 text-sm text-white hover:bg-black" href="/labels/new">
-            新建标签项目 / New Project
+          <div className="grid gap-3 sm:grid-cols-3">
+            <MetricCard label="项目总数" value={String(projects.length).padStart(2, "0")} />
+            <MetricCard label="进行中" value={String(activeCount).padStart(2, "0")} />
+            <MetricCard label="草稿数" value={String(draftCount).padStart(2, "0")} />
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <Link className="lp-btn-primary px-5 py-3 text-sm font-medium" href="/labels/new">
+            新建标签项目
           </Link>
+          <span className="rounded-full border border-[color:var(--lp-line)] bg-white/60 px-4 py-2 text-sm text-[color:var(--lp-muted-strong)]">
+            已归档 {archivedCount} 个项目
+          </span>
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-black/10 bg-white/90 p-5 shadow-panel">
+      <section className="lp-card p-5">
         <form className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_180px_auto]" method="get">
           <label className="space-y-2">
             <span className="text-sm font-medium">搜索项目 / Search</span>
             <input
-              className="w-full rounded-2xl border border-black/10 bg-[#faf8f3] px-4 py-3 outline-none transition focus:border-black"
+              className="lp-input"
               defaultValue={q}
               name="q"
               placeholder="项目名或 ID"
@@ -73,7 +88,7 @@ export default async function LabelsPage({ searchParams }: LabelsPageProps) {
           <label className="space-y-2">
             <span className="text-sm font-medium">模板筛选 / Template</span>
             <select
-              className="w-full rounded-2xl border border-black/10 bg-[#faf8f3] px-4 py-3 outline-none transition focus:border-black"
+              className="lp-input"
               defaultValue={template}
               name="template"
             >
@@ -89,7 +104,7 @@ export default async function LabelsPage({ searchParams }: LabelsPageProps) {
           <label className="space-y-2">
             <span className="text-sm font-medium">状态筛选 / Status</span>
             <select
-              className="w-full rounded-2xl border border-black/10 bg-[#faf8f3] px-4 py-3 outline-none transition focus:border-black"
+              className="lp-input"
               defaultValue={status}
               name="status"
             >
@@ -102,21 +117,21 @@ export default async function LabelsPage({ searchParams }: LabelsPageProps) {
           </label>
 
           <div className="flex items-end gap-2">
-            <button className="rounded-full bg-ink px-5 py-3 text-sm text-white hover:bg-black" type="submit">
+            <button className="lp-btn-primary px-5 py-3 text-sm" type="submit">
               搜索
             </button>
-            <Link className="rounded-full border border-black/10 px-5 py-3 text-sm hover:bg-black hover:text-white" href="/labels">
+            <Link className="lp-btn-secondary px-5 py-3 text-sm" href="/labels">
               重置
             </Link>
           </div>
         </form>
 
-        <div className="mt-4 text-sm text-black/55">当前结果 {projects.length} 条</div>
+        <div className="mt-4 text-sm text-[color:var(--lp-muted)]">当前结果 {projects.length} 条</div>
       </section>
 
-      <section className="overflow-hidden rounded-[28px] border border-black/10 bg-white/90 shadow-panel">
-        <table className="min-w-full divide-y divide-black/10 text-sm">
-          <thead className="bg-[#f8f5ed] text-left text-black/55">
+      <section className="lp-card overflow-hidden">
+        <table className="min-w-full divide-y divide-[color:var(--lp-line)] text-sm">
+          <thead className="bg-[rgba(208,174,102,0.09)] text-left text-[color:var(--lp-muted)]">
             <tr>
               <th className="px-5 py-4 font-medium">项目 / Project</th>
               <th className="px-5 py-4 font-medium">模板 / Template</th>
@@ -125,34 +140,34 @@ export default async function LabelsPage({ searchParams }: LabelsPageProps) {
               <th className="px-5 py-4 font-medium">操作 / Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-black/5">
+          <tbody className="divide-y divide-[rgba(80,49,28,0.06)]">
             {projects.length === 0 ? (
               <tr>
-                <td className="px-5 py-8 text-black/55" colSpan={5}>
+                <td className="px-5 py-8 text-[color:var(--lp-muted)]" colSpan={5}>
                   没有匹配的标签项目，请调整搜索条件。 / No matching label projects.
                 </td>
               </tr>
             ) : (
               projects.map((project) => (
-                <tr key={project.id}>
+                <tr className="bg-white/52 transition hover:bg-white/82" key={project.id}>
                   <td className="px-5 py-4">
-                    <div className="font-medium">{project.name}</div>
-                    <div className="text-xs text-black/45">{project.id}</div>
+                    <div className="font-medium text-[color:var(--lp-ink)]">{project.name}</div>
+                    <div className="text-xs text-[color:var(--lp-muted)]">{project.id}</div>
                   </td>
                   <td className="px-5 py-4">{getTemplateMeta(project.templateKey).name}</td>
                   <td className="px-5 py-4">
-                    <span className="rounded-full border border-black/10 px-3 py-1 text-xs uppercase tracking-[0.16em]">
+                    <span className="rounded-full border border-[color:var(--lp-line)] bg-white/72 px-3 py-1 text-xs uppercase tracking-[0.16em] text-[color:var(--lp-red-deep)]">
                       {project.status}
                     </span>
                   </td>
-                  <td className="px-5 py-4 text-black/60">{dateFormatter.format(project.updatedAt)}</td>
+                  <td className="px-5 py-4 text-[color:var(--lp-muted-strong)]">{dateFormatter.format(project.updatedAt)}</td>
                   <td className="px-5 py-4">
                     <div className="flex flex-wrap gap-2">
-                      <Link className="rounded-full border border-black/10 px-3 py-1.5 hover:bg-black hover:text-white" href={`/labels/${project.id}/edit`}>
-                        编辑 / Edit
+                      <Link className="lp-btn-secondary px-3 py-1.5" href={`/labels/${project.id}/edit`}>
+                        编辑
                       </Link>
-                      <Link className="rounded-full border border-black/10 px-3 py-1.5 hover:bg-black hover:text-white" href={`/labels/${project.id}/preview`}>
-                        预览 / Preview
+                      <Link className="lp-btn-secondary px-3 py-1.5" href={`/labels/${project.id}/preview`}>
+                        预览
                       </Link>
                       <项目操作01 id={project.id} isArchived={project.status === "archived"} />
                     </div>
@@ -163,6 +178,15 @@ export default async function LabelsPage({ searchParams }: LabelsPageProps) {
           </tbody>
         </table>
       </section>
+    </div>
+  );
+}
+
+function MetricCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="lp-panel px-4 py-4">
+      <div className="text-xs uppercase tracking-[0.22em] text-[color:var(--lp-muted)]">{label}</div>
+      <div className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[color:var(--lp-red-deep)]">{value}</div>
     </div>
   );
 }

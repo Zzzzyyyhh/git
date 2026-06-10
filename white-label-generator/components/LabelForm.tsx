@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { LabelPreview } from "@/components/LabelPreview";
@@ -15,11 +15,9 @@ import {
   createDefaultProjectPayload,
   createEmptyLabelData,
   createExampleLabelData,
-  customRowSizeSchema,
   label90DetailKeySchema,
   labelProjectSchema,
   labelStatusSchema,
-  standardRows,
   type Label12095DetailKey,
   type Label12095Layout,
   type Label90DetailKey,
@@ -36,36 +34,28 @@ type LabelFormProps = {
 };
 
 const textFields: Array<{ name: keyof LabelProjectPayload["data"]; label: string; labelCn: string; rows?: number }> = [
-  { name: "productName", label: "英文品名 / Product Name", labelCn: "英文品名" },
-  { name: "productNameCn", label: "中文品名 / Chinese Name", labelCn: "中文品名" },
-  { name: "productFormalNameCn", label: "产品名称 / Formal Product Name", labelCn: "产品名称" },
-  { name: "productCategoryCn", label: "产品类别 / Product Category", labelCn: "产品类别" },
+  { name: "productNameCn", label: "标题 / Title", labelCn: "标题" },
+  { name: "productFormalNameCn", label: "产品名称 / Product Name", labelCn: "产品名称" },
+  { name: "productCategoryCn", label: "调味品种类 / Category", labelCn: "调味品种类" },
   { name: "netWeight", label: "净含量 / Net Weight", labelCn: "净含量" },
-  { name: "ingredients", label: "配料 / Ingredients", labelCn: "配料", rows: 5 },
-  { name: "allergenDeclaration", label: "过敏原信息 / Allergen Declaration", labelCn: "过敏原信息", rows: 2 },
-  { name: "productionDateAndLotNumber", label: "生产日期与批号 / Production Date and Lot Number", labelCn: "生产日期与批号" },
-  { name: "expiryDate", label: "到期日 / Expiry Date", labelCn: "到期日" },
+  { name: "ingredients", label: "配料表 / Ingredients", labelCn: "配料表", rows: 5 },
+  { name: "allergenDeclaration", label: "致敏物质提示 / Allergen Declaration", labelCn: "致敏物质提示", rows: 2 },
+  { name: "productionDateAndLotNumber", label: "生产日期及保质期到期日 / Production Date", labelCn: "生产日期及保质期到期日" },
   { name: "shelfLife", label: "保质期 / Shelf Life", labelCn: "保质期" },
   { name: "storageCondition", label: "贮存条件 / Storage Condition", labelCn: "贮存条件", rows: 3 },
   { name: "usageMethod", label: "食用方法 / Usage Method", labelCn: "食用方法" },
-  { name: "countryOfOrigin", label: "原产国 / Country of Origin", labelCn: "原产国" },
+  { name: "countryOfOrigin", label: "产地 / Country of Origin", labelCn: "产地" },
   { name: "productionLicenseNumber", label: "食品生产许可证编号 / Production License Number", labelCn: "食品生产许可证编号" },
   { name: "productStandardCode", label: "产品执行标准 / Product Standard Code", labelCn: "产品执行标准" },
-  { name: "manufacturer", label: "生产商 / Manufacturer", labelCn: "生产商" },
-  { name: "manufacturerAddress", label: "生产商地址 / Manufacturer Address", labelCn: "生产商地址", rows: 3 },
-  { name: "manufacturerTel", label: "生产商电话 / Manufacturer Tel", labelCn: "生产商电话" },
   { name: "consignor", label: "委托商 / Consignor", labelCn: "委托商" },
   { name: "consignorAddress", label: "委托商地址 / Consignor Address", labelCn: "委托商地址", rows: 3 },
   { name: "consignorTel", label: "委托商电话 / Consignor Tel", labelCn: "委托商电话" },
-  { name: "importer", label: "进口商 / Importer", labelCn: "进口商" },
-  { name: "importerAddress", label: "进口商地址 / Importer Address", labelCn: "进口商地址", rows: 3 },
-  { name: "importerTel", label: "进口商电话 / Importer Tel", labelCn: "进口商电话" },
-  { name: "factoryRegistrationNumber", label: "工厂备案号 / Factory Registration Number", labelCn: "工厂备案号" },
-  { name: "destinationCountry", label: "目的国 / Destination Country", labelCn: "目的国" }
+  { name: "manufacturer", label: "受委托商 / Manufacturer", labelCn: "受委托商" },
+  { name: "manufacturerAddress", label: "受委托商地址 / Manufacturer Address", labelCn: "受委托商地址", rows: 3 },
+  { name: "manufacturerTel", label: "受委托商电话 / Manufacturer Tel", labelCn: "受委托商电话" }
 ];
 
-const label90HiddenFieldNames = new Set<keyof LabelProjectPayload["data"]>(["productName", "importer", "importerAddress", "importerTel"]);
-const importerRowKeys = new Set(["importer", "importerAddress", "importerTel"]);
+const label90HiddenFieldNames = new Set<keyof LabelProjectPayload["data"]>();
 
 const nutritionRowFields: Array<{
   key: string;
@@ -139,10 +129,8 @@ const detailFieldLabels12095: Record<Label12095DetailKey, string> = {
 };
 
 const statusOptions = labelStatusSchema.options;
-const customRowSizeOptions = customRowSizeSchema.options;
 const detailFieldKeys = label90DetailKeySchema.options;
 const chineseLabelTemplateKeys = new Set<LabelProjectPayload["templateKey"]>(["label_90x120_cn", "label_120x95_cn"]);
-const tableTemplateKeys = new Set<LabelProjectPayload["templateKey"]>(["carton_120_square", "carton_120_square_cn"]);
 const draggableChineseTemplateKeys = new Set<LabelProjectPayload["templateKey"]>(["label_90x120_cn", "label_120x95_cn"]);
 
 export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFormProps) {
@@ -157,10 +145,6 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
     resolver: zodResolver(labelProjectSchema),
     defaultValues: initialValue ?? createDefaultProjectPayload()
   });
-  const customRows = useFieldArray({
-    control: form.control,
-    name: "data.customRows"
-  });
   const previewRef = useRef<HTMLDivElement>(null);
 
   const values = form.watch();
@@ -168,10 +152,6 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
   const template = useMemo(() => templates[previewValues.templateKey], [previewValues.templateKey]);
   const visibleTextFields = useMemo(
     () => textFields.filter((field) => (chineseLabelTemplateKeys.has(previewValues.templateKey) ? !label90HiddenFieldNames.has(field.name) : true)),
-    [previewValues.templateKey]
-  );
-  const visibleStandardRows = useMemo(
-    () => standardRows.filter((row) => (chineseLabelTemplateKeys.has(previewValues.templateKey) ? !importerRowKeys.has(row.key) : true)),
     [previewValues.templateKey]
   );
   const previewTextTargets = useMemo(
@@ -346,26 +326,29 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,0.92fr)_minmax(640px,1.08fr)]">
-      <div className="rounded-[28px] border border-black/10 bg-white/90 p-5 shadow-panel backdrop-blur">
+      <div className="lp-card p-5 sm:p-6 backdrop-blur">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-black/45">
+            <p className="lp-kicker">
               {mode === "create" ? "Create Project" : "Edit Project"}
             </p>
-            <h2 className="text-xl font-semibold">标签信息 / Label Setup</h2>
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">标签信息工作台</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[color:var(--lp-muted-strong)]">
+              集中维护模板、文本内容、商标与营养表配置；右侧同步预览，保留核心导出路径。
+            </p>
           </div>
           <div className="flex flex-wrap gap-2">
             {mode === "edit" && initialValue ? (
               <Link
-                className="rounded-full border border-black/10 px-4 py-2 text-sm hover:bg-black hover:text-white"
+                className="lp-btn-secondary px-4 py-2 text-sm"
                 href={`/labels/${initialValue.id}/preview`}
               >
-                独立预览页 / Preview
+                独立预览页
               </Link>
             ) : null}
             {mode === "edit" ? (
               <button
-                className="rounded-full border border-black/10 px-4 py-2 text-sm hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="lp-btn-secondary px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={savingTemplateDefault}
                 onClick={handleSaveTemplateDefault}
                 type="button"
@@ -374,7 +357,7 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
               </button>
             ) : null}
             <button
-              className="rounded-full border border-black/10 px-4 py-2 text-sm hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="lp-btn-secondary px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
               disabled={exporting !== null}
               onClick={() => handleExport("png")}
               type="button"
@@ -382,7 +365,7 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
               {exporting === "png" ? "导出中..." : "导出 PNG"}
             </button>
             <button
-              className="rounded-full bg-ink px-4 py-2 text-sm text-white hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+              className="lp-btn-primary px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
               disabled={exporting !== null}
               onClick={() => handleExport("pdf")}
               type="button"
@@ -413,7 +396,7 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
             <label className="space-y-2">
               <span className="text-sm font-medium">项目名称 / Project Name</span>
               <input
-                className="w-full rounded-2xl border border-black/10 bg-[#faf8f3] px-4 py-3 outline-none transition focus:border-black"
+                className="lp-input"
                 {...form.register("name")}
               />
               <FieldError message={form.formState.errors.name?.message} />
@@ -422,7 +405,7 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
             <label className="space-y-2">
               <span className="text-sm font-medium">标签版本 / Label Template</span>
               <select
-                className="w-full rounded-2xl border border-black/10 bg-[#faf8f3] px-4 py-3 outline-none transition focus:border-black"
+                className="lp-input"
                 {...form.register("templateKey")}
               >
                 {Object.values(templates).map((item) => (
@@ -436,7 +419,7 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
             <label className="space-y-2">
               <span className="text-sm font-medium">状态 / Status</span>
               <select
-                className="w-full rounded-2xl border border-black/10 bg-[#faf8f3] px-4 py-3 outline-none transition focus:border-black"
+                className="lp-input"
                 {...form.register("status")}
               >
                 {statusOptions.map((status) => (
@@ -447,7 +430,7 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
               </select>
             </label>
 
-            <div className="rounded-2xl border border-dashed border-black/10 bg-[#faf8f3] px-4 py-3 text-sm text-black/60">
+            <div className="lp-panel border-dashed px-4 py-3 text-sm text-[color:var(--lp-muted-strong)]">
               当前模板 / Active Template: {template.name}
               <br />
               成品尺寸 / Final Size: {template.sizeLabel}
@@ -455,13 +438,13 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
           </div>
 
           {mode === "create" ? (
-            <section className="flex flex-wrap items-center justify-between gap-3 rounded-[24px] border border-black/10 bg-[#faf8f3] p-4">
+            <section className="lp-section flex flex-wrap items-center justify-between gap-3 p-4">
               <div>
                 <h3 className="text-base font-semibold">空态创建 / Empty Start</h3>
-                <p className="mt-1 text-sm text-black/60">新建项目默认使用当前模板的默认值；如果没有默认值，则从干净空白表单开始。</p>
+                <p className="mt-1 text-sm text-[color:var(--lp-muted-strong)]">新建项目默认使用当前模板的默认值；如果没有默认值，则从干净空白表单开始。</p>
               </div>
               <button
-                className="rounded-full border border-black/10 px-4 py-2 text-sm hover:bg-black hover:text-white"
+                className="lp-btn-secondary px-4 py-2 text-sm"
                 onClick={handleLoadExample}
                 type="button"
               >
@@ -470,16 +453,16 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
             </section>
           ) : null}
 
-          <section className="space-y-4 rounded-[24px] border border-black/10 bg-[#faf8f3] p-4">
+          <section className="lp-section space-y-4 p-4">
             <div>
               <h3 className="text-base font-semibold">商标设置 / Logo</h3>
-              <p className="mt-1 text-sm text-black/60">所有模板都可切换不加入、图片标、文字标。位置和大小请直接在右侧预览里拖动调整。</p>
+              <p className="mt-1 text-sm text-[color:var(--lp-muted-strong)]">所有模板都可切换不加入、图片标、文字标。位置和大小请直接在右侧预览里拖动调整。</p>
             </div>
 
             <label className="space-y-2">
               <span className="text-sm font-medium">商标类型 / Logo Type</span>
               <select
-                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black"
+                className="lp-input"
                 {...form.register("data.logoKind")}
               >
                 <option value="none">不加入商标</option>
@@ -494,13 +477,13 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
                 <span className="text-sm font-medium">上传客户商标 PNG / Upload PNG</span>
                 <input
                   accept="image/png"
-                  className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition file:mr-4 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-2 file:text-sm file:text-white focus:border-black"
+                  className="lp-input text-sm file:mr-4 file:rounded-full file:border-0 file:bg-[color:var(--lp-red-deep)] file:px-4 file:py-2 file:text-sm file:text-white"
                   onChange={(event) => handleCustomLogoUpload(event.target.files?.[0] ?? null)}
                   type="file"
                 />
               </label>
               <button
-                className="self-end rounded-full border border-black/10 px-4 py-3 text-sm hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                className="lp-btn-secondary self-end px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-40"
                 disabled={!form.watch("data.customLogoPng")}
                 onClick={() => {
                   form.setValue("data.customLogoPng", "", { shouldDirty: true });
@@ -515,11 +498,11 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
             </div>
 
             {form.watch("data.customLogoPng") ? (
-              <div className="flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-3">
-                <div className="flex h-14 w-20 items-center justify-center overflow-hidden rounded-xl border border-black/10 bg-[#faf8f3]">
+              <div className="lp-panel flex items-center gap-3 bg-white/72 p-3">
+                <div className="flex h-14 w-20 items-center justify-center overflow-hidden rounded-xl border border-[color:var(--lp-line)] bg-[rgba(255,251,246,0.88)]">
                   <img alt="上传商标预览" className="max-h-full max-w-full object-contain" src={form.watch("data.customLogoPng")} />
                 </div>
-                <div className="text-sm text-black/65">已上传客户商标 PNG，可选择“上传商标 PNG”并在右侧预览中拖动和缩放。</div>
+                <div className="text-sm text-[color:var(--lp-muted-strong)]">已上传客户商标 PNG，可选择“上传商标 PNG”并在右侧预览中拖动和缩放。</div>
               </div>
             ) : null}
           </section>
@@ -530,13 +513,13 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
                 <span className="text-sm font-medium">{isChineseTemplate ? field.labelCn : field.label}</span>
                 {field.rows ? (
                   <textarea
-                    className="min-h-24 w-full rounded-2xl border border-black/10 bg-[#faf8f3] px-4 py-3 outline-none transition focus:border-black"
+                    className="lp-input min-h-24"
                     rows={field.rows}
                     {...form.register(`data.${field.name}`)}
                   />
                 ) : (
                   <input
-                    className="w-full rounded-2xl border border-black/10 bg-[#faf8f3] px-4 py-3 outline-none transition focus:border-black"
+                    className="lp-input"
                     {...form.register(`data.${field.name}`)}
                   />
                 )}
@@ -545,14 +528,14 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
             ))}
           </div>
 
-          <section className="space-y-4 rounded-[24px] border border-black/10 bg-[#faf8f3] p-4">
+          <section className="lp-section space-y-4 p-4">
             <div>
               <h3 className="text-base font-semibold">营养成分表 / Nutrition Panel</h3>
-              <p className="mt-1 text-sm text-black/60">按固定 7 行录入营养成分值和营养素参考值%，模板会自动生成紧凑表格。</p>
+              <p className="mt-1 text-sm text-[color:var(--lp-muted-strong)]">按固定 7 行录入营养成分值和营养素参考值%，模板会自动生成紧凑表格。</p>
             </div>
 
             {chineseLabelTemplateKeys.has(previewValues.templateKey) ? (
-              <label className="flex items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium">
+              <label className="lp-panel flex items-center gap-3 bg-white/72 px-4 py-3 text-sm font-medium">
                 <input
                   checked={!form.watch("data.label90NutritionHidden")}
                   onChange={(event) => form.setValue("data.label90NutritionHidden", !event.target.checked, { shouldDirty: true })}
@@ -566,14 +549,14 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
               <label className="space-y-2">
                 <span className="text-sm font-medium">{isChineseTemplate ? "表头份量" : "表头份量 / Serving Size"}</span>
                 <input
-                  className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black"
+                  className="lp-input"
                   {...form.register("data.nutritionServingSize")}
                 />
               </label>
               <label className="space-y-2">
                 <span className="text-sm font-medium">{isChineseTemplate ? "营养备注" : "营养备注 / Nutrition Remark"}</span>
                 <input
-                  className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black"
+                  className="lp-input"
                   {...form.register("data.nutritionRemark")}
                 />
               </label>
@@ -582,18 +565,18 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
             <div className="space-y-3">
               {nutritionRowFields.map((row) => (
                 <div className="grid gap-3 md:grid-cols-[120px_minmax(0,1fr)_120px]" key={row.key}>
-                  <div className="flex items-center rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium">{row.label}</div>
+                  <div className="lp-panel flex items-center bg-white/72 px-4 py-3 text-sm font-medium">{row.label}</div>
                   <label className="space-y-2">
                     <span className="text-sm font-medium">含量值</span>
                     <input
-                      className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black"
+                      className="lp-input"
                       {...form.register(`data.${row.valueName}`)}
                     />
                   </label>
                   <label className="space-y-2">
                     <span className="text-sm font-medium">营养素参考值%</span>
                     <input
-                      className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black"
+                      className="lp-input"
                       {...form.register(`data.${row.nrvName}`)}
                     />
                   </label>
@@ -604,27 +587,27 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
 
           {previewValues.templateKey === "label_90x120_cn" ? (
             <>
-              <section className="space-y-4 rounded-[24px] border border-black/10 bg-[#faf8f3] p-4">
+              <section className="lp-section space-y-4 p-4">
                 <div>
                   <h3 className="text-base font-semibold">90×120 模板微调 / 90×120 Layout Controls</h3>
-                  <p className="mt-1 text-sm text-black/60">
+                  <p className="mt-1 text-sm text-[color:var(--lp-muted-strong)]">
                     位置只通过右侧拖动文本框调整。这里仅保留 3 个主文字的字符高度设置，单位使用 pt。
                   </p>
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-3">
                   {label90LayoutFields.map((field) => (
-                    <div className="rounded-2xl border border-black/10 bg-white p-4" key={field.key}>
+                    <div className="lp-panel bg-white/72 p-4" key={field.key}>
                       <NumberInput controlLabel={`${field.label} 字符高度(pt)`} registerPath={`data.label90Layout.${field.key}.fontSize`} form={form} step="0.1" />
                     </div>
                   ))}
                 </div>
               </section>
 
-              <section className="space-y-4 rounded-[24px] border border-black/10 bg-[#faf8f3] p-4">
+              <section className="lp-section space-y-4 p-4">
                 <div>
                   <h3 className="text-base font-semibold">详情字段控制 / Detail Textboxes</h3>
-                  <p className="mt-1 text-sm text-black/60">统一调整详情小字字号和行高。每个字段可独立勾选显示；位置更新请直接拖动右侧文本框。</p>
+                  <p className="mt-1 text-sm text-[color:var(--lp-muted-strong)]">统一调整详情小字字号和行高。每个字段可独立勾选显示；位置更新请直接拖动右侧文本框。</p>
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-2">
@@ -637,7 +620,7 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
                     const hidden = form.watch("data.label90HiddenDetails").includes(detailKey);
 
                     return (
-                      <div className="rounded-2xl border border-black/10 bg-white p-4" key={detailKey}>
+                      <div className="lp-panel bg-white/72 p-4" key={detailKey}>
                         <div className="flex items-center justify-between gap-3">
                           <label className="flex items-center gap-3 text-sm font-semibold">
                             <input
@@ -667,27 +650,27 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
             </>
           ) : previewValues.templateKey === "label_120x95_cn" ? (
             <>
-              <section className="space-y-4 rounded-[24px] border border-black/10 bg-[#faf8f3] p-4">
+              <section className="lp-section space-y-4 p-4">
                 <div>
                   <h3 className="text-base font-semibold">120×95 模板微调 / 120×95 Layout Controls</h3>
-                  <p className="mt-1 text-sm text-black/60">
+                  <p className="mt-1 text-sm text-[color:var(--lp-muted-strong)]">
                     位置只通过右侧拖动文本框调整。这里保留 3 个主文字的字符高度设置，单位使用 pt。
                   </p>
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-3">
                   {label12095LayoutFields.map((field) => (
-                    <div className="rounded-2xl border border-black/10 bg-white p-4" key={field.key}>
+                    <div className="lp-panel bg-white/72 p-4" key={field.key}>
                       <NumberInput controlLabel={`${field.label} 字符高度(pt)`} registerPath={`data.label12095Layout.${field.key}.fontSize`} form={form} step="0.1" />
                     </div>
                   ))}
                 </div>
               </section>
 
-              <section className="space-y-4 rounded-[24px] border border-black/10 bg-[#faf8f3] p-4">
+              <section className="lp-section space-y-4 p-4">
                 <div>
                   <h3 className="text-base font-semibold">120×95 详情字段控制 / Detail Textboxes</h3>
-                  <p className="mt-1 text-sm text-black/60">统一调整详情小字字号和行高。每个字段可独立勾选显示；位置更新请直接拖动右侧文本框。</p>
+                  <p className="mt-1 text-sm text-[color:var(--lp-muted-strong)]">统一调整详情小字字号和行高。每个字段可独立勾选显示；位置更新请直接拖动右侧文本框。</p>
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-2">
@@ -700,7 +683,7 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
                     const hidden = form.watch("data.label12095HiddenDetails").includes(detailKey);
 
                     return (
-                      <div className="rounded-2xl border border-black/10 bg-white p-4" key={detailKey}>
+                      <div className="lp-panel bg-white/72 p-4" key={detailKey}>
                         <div className="flex items-center justify-between gap-3">
                           <label className="flex items-center gap-3 text-sm font-semibold">
                             <input
@@ -730,131 +713,13 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
             </>
           ) : null}
 
-          {tableTemplateKeys.has(previewValues.templateKey) ? (
-            <section className="space-y-4 rounded-[24px] border border-black/10 bg-[#faf8f3] p-4">
-              <div>
-                <h3 className="text-base font-semibold">表格行设置 / Table Row Settings</h3>
-                <p className="mt-1 text-sm text-black/60">每个项目都可以隐藏默认行，并新增自定义行。</p>
-              </div>
 
-              <div className="grid gap-3 md:grid-cols-2">
-                {visibleStandardRows.map((row) => {
-                const hiddenRows = form.watch("data.hiddenRows");
-                const checked = !hiddenRows.includes(row.key);
-
-                return (
-                  <label
-                    className="flex items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm"
-                    key={row.key}
-                  >
-                    <input
-                      checked={checked}
-                      onChange={(event) => {
-                        const current = form.getValues("data.hiddenRows");
-                        if (event.target.checked) {
-                          form.setValue(
-                            "data.hiddenRows",
-                            current.filter((item) => item !== row.key),
-                            { shouldDirty: true }
-                          );
-                        } else if (!current.includes(row.key)) {
-                          form.setValue("data.hiddenRows", [...current, row.key], { shouldDirty: true });
-                        }
-                      }}
-                      type="checkbox"
-                    />
-                    <span>{row.label}</span>
-                  </label>
-                );
-                })}
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <h4 className="text-sm font-semibold">自定义行 / Custom Rows</h4>
-                  <button
-                    className="rounded-full border border-black/10 px-4 py-2 text-sm hover:bg-black hover:text-white"
-                    onClick={() =>
-                      customRows.append({
-                        rowId: crypto.randomUUID(),
-                        label: "",
-                        value: "",
-                        size: "normal"
-                      })
-                    }
-                    type="button"
-                  >
-                    新增一行 / Add Row
-                  </button>
-                </div>
-
-                {customRows.fields.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-black/10 px-4 py-3 text-sm text-black/55">
-                    当前没有自定义行 / No custom rows yet.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {customRows.fields.map((field, index) => (
-                      <div className="rounded-2xl border border-black/10 bg-white p-4" key={field.id}>
-                        <div className="mb-3 flex items-center justify-between gap-3">
-                          <p className="text-sm font-semibold">自定义行 {index + 1} / Custom Row {index + 1}</p>
-                          <button
-                            className="rounded-full border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
-                            onClick={() => customRows.remove(index)}
-                            type="button"
-                          >
-                            删除 / Remove
-                          </button>
-                        </div>
-
-                        <div className="grid gap-3 md:grid-cols-2">
-                          <label className="space-y-2">
-                            <span className="text-sm font-medium">行标题 / Row Label</span>
-                            <input
-                              className="w-full rounded-2xl border border-black/10 bg-[#faf8f3] px-4 py-3 outline-none transition focus:border-black"
-                              {...form.register(`data.customRows.${index}.label`)}
-                            />
-                            <FieldError message={form.formState.errors.data?.customRows?.[index]?.label?.message} />
-                          </label>
-
-                          <label className="space-y-2">
-                            <span className="text-sm font-medium">行高度 / Row Height</span>
-                            <select
-                              className="w-full rounded-2xl border border-black/10 bg-[#faf8f3] px-4 py-3 outline-none transition focus:border-black"
-                              {...form.register(`data.customRows.${index}.size`)}
-                            >
-                              {customRowSizeOptions.map((size) => (
-                                <option key={size} value={size}>
-                                  {size === "compact" ? "紧凑 / Compact" : size === "normal" ? "标准 / Normal" : "加高 / Tall"}
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-
-                          <label className="space-y-2 md:col-span-2">
-                            <span className="text-sm font-medium">行内容 / Row Value</span>
-                            <textarea
-                              className="min-h-20 w-full rounded-2xl border border-black/10 bg-[#faf8f3] px-4 py-3 outline-none transition focus:border-black"
-                              rows={3}
-                              {...form.register(`data.customRows.${index}.value`)}
-                            />
-                            <FieldError message={form.formState.errors.data?.customRows?.[index]?.value?.message} />
-                          </label>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </section>
-          ) : null}
-
-          <div className="flex items-center justify-between gap-3 border-t border-black/10 pt-4">
-            <Link className="text-sm text-black/60 hover:text-black" href="/labels">
-              返回列表 / Back
+          <div className="flex items-center justify-between gap-3 border-t border-[color:var(--lp-line)] pt-4">
+            <Link className="text-sm text-[color:var(--lp-muted-strong)] hover:text-[color:var(--lp-red-deep)]" href="/labels">
+              返回列表
             </Link>
             <button
-              className="rounded-full bg-accent px-5 py-3 text-sm font-medium text-white hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
+              className="lp-btn-primary px-5 py-3 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
               disabled={isPending || form.formState.isSubmitting}
               type="submit"
             >
@@ -894,7 +759,7 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
             templateKey={previewValues.templateKey}
           />
           {draggableChineseTemplateKeys.has(previewValues.templateKey) ? (
-            <div className="rounded-[18px] border border-black/10 bg-white/90 p-2 shadow-panel">
+            <div className="lp-card rounded-[22px] p-2">
               <div className="grid gap-1.5">
                 {previewTextTargets.map((target) => {
                   const targetId = getEditableTargetId(target);
@@ -904,8 +769,8 @@ export function LabelForm({ mode, initialValue, templateDefaults = {} }: LabelFo
                     <button
                       className={`rounded-xl border px-2.5 py-2 text-left text-xs font-medium transition ${
                         active
-                          ? "border-sky-500 bg-sky-50 text-sky-700"
-                          : "border-black/10 bg-[#faf8f3] text-black/70 hover:border-black/30 hover:bg-white"
+                          ? "border-[rgba(159,24,32,0.32)] bg-[rgba(159,24,32,0.08)] text-[color:var(--lp-red-deep)]"
+                          : "border-[color:var(--lp-line)] bg-[rgba(255,251,246,0.9)] text-[color:var(--lp-muted-strong)] hover:border-[rgba(125,15,19,0.18)] hover:bg-white"
                       }`}
                       key={targetId}
                       onClick={() => setActiveLabel90Target(targetId)}
@@ -959,7 +824,7 @@ function NumberInput({
     <label className="space-y-2">
       <span className="text-sm font-medium">{controlLabel}</span>
       <input
-        className="w-full rounded-2xl border border-black/10 bg-[#faf8f3] px-4 py-3 outline-none transition focus:border-black"
+        className="lp-input"
         step={step}
         type="number"
         {...form.register(registerPath as never, { valueAsNumber: true })}
